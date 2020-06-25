@@ -31,10 +31,13 @@ function removeEmployee(){
 } 
 
 function makeEmployee(first_name, last_name, job_id, manager_id){
-    let queryString = "INSERT INTO employees SET ?";
-    connection.q(queryString [(first_name, last_name, job_id, manager_id)], function(err, result) {
-    if (err) throw err;
-        console.log(result);
+    let queryString = `INSERT INTO employees (first_name,last_name,job_id,manager_id) VALUES (?,?,?,?)`;
+    let emp = [`Insert a new row with placeholders`, false];
+    connection.q(queryString, emp,(err, results, fields)=> {
+    if (err) {
+        return console.error(err.message);
+    }
+    console.log('Row inserted:' + results.affectedRows);
     });
 } 
 

@@ -72,13 +72,13 @@ async function printAllFrom (tableName)
 
 // ask the user to choose a role
 // return Job id
-async function promptForRole ()
+async function promptForRole (query)
 {
   const myJob = await getChoicesFromDb("jobs", formatJobChoice);
   const job = await inquirer.prompt({
     name: "choice",
     type: "list",
-    message: "Which Role would you like to view?",
+    message: query,
     choices: myJob
   });
   return job.choice.id;
@@ -111,7 +111,7 @@ async function promptForEmployee (question)
   return Emp.person.id;
 }
 
-async function promptForText(question)
+async function promptForText (question)
 {
   const text = await inquirer.prompt({
     name: "value",
@@ -121,13 +121,14 @@ async function promptForText(question)
   return text.value;
 }
 
-async function promptForSalary()
+async function promptForSalary ()
 {
   const money = await inquirer.prompt({
     name: "value",
     type: "number",
     message: "What is the salary?",  //check for number
-    validate: function (input) {
+    validate: function (input)
+    {
       //todo: validate that the 'input' is a number
       return true;
     }
@@ -138,32 +139,41 @@ async function promptForSalary()
 // prints all employee names from a department into the console
 async function printEmployeesFrom (departmentId)
 {
-  //SQL joins...
-  console.log(departmentId);
+  // select * from employees LEFT JOIN departments ON
+  const queryString = "SELECT * FROM employees WHERE ?";
+  const result = await connection.q(queryString, { manager_id: managerId });
+  console.table(result);
 }
 
 async function printEmployeesManagedBy (managerId)
 {
-  //SQL joins...
-  console.log(managerId);
+  const queryString = "SELECT * FROM employees WHERE ?";
+  const result = await connection.q(queryString, { manager_id: managerId });
+  console.table(result);
 }
 
 async function updateRole (empId, jobId)
 {
-  //SQL
-  console.log(empId, jobId);
+  const queryString = "UPDATE employees SET ? WHERE ?";
+  const result = await connection.q(queryString, [{ job_id: jobId }, { id: empId }]);
 }
 
 async function updateManager (empId, mgrId)
 {
-  //SQL
-  console.log(empId, mgrId);
+  const queryString = "UPDATE employees SET ? WHERE ?";
+  const result = await connection.q(queryString, [{ manager_id: mgrId }, { id: empId }]);
 }
 
 async function removeByIdFrom (tableName, id)
 {
-  //SQL
-  console.log(tableName, id);
+  try {
+    const queryString = `DELETE FROM ${tableName} WHERE ?`;
+    const result = await connection.q(queryString, { id: id });
+  }
+  catch {
+    console.log("Unable to remove item in use");
+  }
+
 }
 
 async function printUtilizedBudgetOf (deptId)
@@ -172,22 +182,26 @@ async function printUtilizedBudgetOf (deptId)
   console.log(deptId);
 }
 
-async function createNewRole(title, salary, deptId)
+async function createNewRole (title, salary, deptId)
 {
   //SQL
   console.log(title, salary, deptId);
 }
 
-async function createNewDepartment(name)
+async function createNewDepartment (name)
 {
-  //SQL
-  console.log(name);
+  const queryString = "INSERT INTO departments SET ?";
+  await connection.q(queryString, { department_name: name });
 }
 
-async function createNewEmployee(firstName, lastName, roleId, mgrId)
+async function createNewEmployee (newbie)
 {
-  //SQL
-  console.log(firstName, lastName, roleId, mgrId);
+  let inserts = [];
+  await inserts.push(newbie);
+
+  return connection.query(
+    `INSERT INTO employees (first_name, last_name, job_id, manager_id) VALUES (?, ?, ?, ?)`, inserts
+  );
 }
 
 async function displayMenu ()
@@ -250,9 +264,9 @@ async function displayMenu ()
 
     case "Add an employee":
       {
-        const firstName = await promptForText("First Name"); 
+        const firstName = await promptForText("First Name");
         const lastName = await promptForText("Last Name");
-        const roleId = await promptForRole();
+        const roleId = await promptForRole("What is the employee Role?");
         const mgrId = await promptForEmployee("who's the manager?");
         await createNewEmployee(firstName, lastName, roleId, mgrId);
       }
@@ -261,7 +275,7 @@ async function displayMenu ()
     case "Update an employee's role":
       {
         const id = await promptForEmployee("Who are we updating?");
-        const job = await promptForRole();
+        const job = await promptForRole("What is the new role?");
         await updateRole(id, job);
       }
       break;
@@ -299,7 +313,7 @@ async function displayMenu ()
 
     case "Delete an existing role":
       {
-        const id = await promptForRole();
+        const id = await promptForRole("What role/job are you deleting?");
         await removeByIdFrom("jobs", id);
       }
       break;
