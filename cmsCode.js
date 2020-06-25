@@ -2,7 +2,6 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 const table = require('console.table');
 const connection = require('./server.js');
-const art = require("ascii-art");
 
 // Gets all data from a db table
 async function getAllDataFrom (tablename)
