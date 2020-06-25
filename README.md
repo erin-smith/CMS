@@ -25,7 +25,7 @@
  Thus, a user can easily organize their employees and track roles, ids, salaries, and manager their system of staff members. 
 [Repo of project](https://github.com/erin-smith/CMS)
 
-![Clickable link to Demostration Video!](https://www.youtube.com/watch?v=JzJFv6scG9A)
+[Clickable link to Demostration Video!](https://www.youtube.com/watch?v=JzJFv6scG9A)
 
 
 ![Screenshot](Assets/CMS.png)  
