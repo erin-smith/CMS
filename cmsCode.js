@@ -139,9 +139,9 @@ async function promptForSalary ()
 // prints all employee names from a department into the console
 async function printEmployeesFrom (departmentId)
 {
-  // select * from employees LEFT JOIN departments ON
-  const queryString = "SELECT * FROM employees WHERE ?";
-  const result = await connection.q(queryString, { manager_id: managerId });
+  // select * from employees 
+  const queryString = "SELECT * FROM employees LEFT JOIN jobs ON employees.job_id = jobs.id WHERE ?";
+  const result = await connection.q(queryString, { department_id: departmentId });
   console.table(result);
 }
 
@@ -176,16 +176,21 @@ async function removeByIdFrom (tableName, id)
 
 }
 
-async function printUtilizedBudgetOf (deptId)
+async function printUtilizedBudgetOf (departmentId)
 {
-  //SQL
-  console.log(deptId);
+  const queryString = "SELECT SUM(salary) as budget FROM employees LEFT JOIN jobs ON employees.job_id = jobs.id WHERE ?";
+  const result = await connection.q(queryString, { department_id: departmentId });
+  console.table(result);
 }
 
 async function createNewRole (title, salary, deptId)
 {
-  //SQL
-  console.log(title, salary, deptId);
+  const queryString = "INSERT INTO jobs SET ?";
+  await connection.q(queryString, { 
+    title: title,
+    salary: salary,
+    department_id: deptId 
+  });
 }
 
 async function createNewDepartment (name)
@@ -194,14 +199,15 @@ async function createNewDepartment (name)
   await connection.q(queryString, { department_name: name });
 }
 
-async function createNewEmployee (newbie)
+async function createNewEmployee (fstname, lstname, jobid, mgrid)
 {
-  let inserts = [];
-  await inserts.push(newbie);
-
-  return connection.query(
-    `INSERT INTO employees (first_name, last_name, job_id, manager_id) VALUES (?, ?, ?, ?)`, inserts
-  );
+  const queryString = "INSERT INTO employees SET ?";
+  await connection.q(queryString, { 
+    first_name: fstname,
+    last_name: lstname,
+    job_id: jobid,
+    manager_id: mgrid
+  });
 }
 
 async function displayMenu ()
@@ -215,16 +221,16 @@ async function displayMenu ()
       "View all roles",
       "View all departments",
       "View all employees by department",
-      "View all employees by manager", //*** */
+      "View all employees by manager", 
       "Remove an employee",
       "Add an employee",
       "Update an employee's role",
-      "Update an employee's manager", //*** */
+      "Update an employee's manager", 
       "Add a new department",
       "Add a new role",
-      "Delete an existing department",//**** */
-      "Delete an existing role", //*** */
-      "View the utilized budget of a department", //*** */
+      "Delete an existing department",
+      "Delete an existing role", 
+      "View the utilized budget of a department", 
       "Exit"
     ]
   });
